@@ -116,6 +116,23 @@ class ESCPanel(QDialog):
             self._slider_layout.addWidget(sl)
         layout.addLayout(self._slider_layout)
 
+        self._big_slider_layout = QHBoxLayout(self)
+        self._big_slider = QSlider(Qt.Horizontal, self)
+        self._big_slider.setMinimum(-100)
+        self._big_slider.setMaximum(100)
+        self._big_slider.setValue(0)
+        self._big_slider.setTickInterval(100)
+        self._big_slider.setTickPosition(QSlider.TicksBothSides)
+        self._big_slider.valueChanged.connect(self.move_big)
+        self._big_spinbox = QSpinBox(self)
+        self._big_spinbox.setMinimum(-100)
+        self._big_spinbox.setMaximum(100)
+        self._big_spinbox.setValue(0)
+        self._big_spinbox.valueChanged.connect(lambda: self._big_slider.setValue(self._big_spinbox.value()))
+        self._big_slider_layout.addWidget(self._big_slider)
+        self._big_slider_layout.addWidget(self._big_spinbox)
+
+        layout.addLayout(self._big_slider_layout)
         layout.addWidget(self._stop_all)
 
         controls_layout = QHBoxLayout(self)
@@ -133,6 +150,11 @@ class ESCPanel(QDialog):
 
         self.setLayout(layout)
         self.resize(self.minimumWidth(), self.minimumHeight())
+    
+    def move_big(self):
+        self._big_spinbox.setValue(self._big_slider.value())
+        for sl in self._sliders:
+            sl._slider.setValue(self._big_slider.value())
 
     def _do_broadcast(self):
         try:
@@ -153,6 +175,7 @@ class ESCPanel(QDialog):
     def _do_stop_all(self):
         for sl in self._sliders:
             sl.zero()
+        self._big_slider.setValue(0)
 
     def _update_number_of_sliders(self):
         num_sliders = self._num_sliders.value()
